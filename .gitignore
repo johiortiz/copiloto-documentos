@@ -1,0 +1,23 @@
+# Python
+backend/venv/
+backend/.venv/
+__pycache__/
+*.py[cod]
+
+# Node / Vite
+frontend/node_modules/
+frontend/dist/
+
+# Archivos locales de prueba
+backend/factura.pdf
+backend/invoice.csv
+*.csv
+
+# Variables de entorno y sistema
+.env
+.env.*
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
