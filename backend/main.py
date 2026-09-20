@@ -1,12 +1,31 @@
 import sys
 from pathlib import Path
-from fastapi import APIRouter
+from fastapi import APIRouter, FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from config import CORS_ORIGINS
 
 from extractor import extract_text_from_pdf
 from storage import get_file_path
 
+from routes import export, extract, upload, validate
+
 
 router = APIRouter()
+
+app = FastAPI(title="Copiloto Documentos")
+
+app.include_router(upload.router, prefix="/api")
+app.include_router(extract.router, prefix="/api")
+app.include_router(validate.router, prefix="/api")
+app.include_router(export.router, prefix="/api")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=CORS_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @router.get("/extract-text/{file_id}")
@@ -25,35 +44,15 @@ def extract_text(file_id: str):
         "text": text,
     }
 
-# Asegurar que el directorio del proyecto está en PYTHONPATH
 BASE_DIR = Path(__file__).resolve().parent
 if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
 
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-
-from config import CORS_ORIGINS
-
-app = FastAPI(title="Copiloto Documentos")
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=CORS_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 @app.get("/health")
 def health():
     return {"status": "ok"}
 
-
-from routes import extract, upload
-
-app.include_router(upload.router, prefix="/api")
-app.include_router(extract.router, prefix="/api")
 
 
 if __name__ == "__main__":

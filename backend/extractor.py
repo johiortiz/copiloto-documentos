@@ -141,3 +141,39 @@ def find_tax_amount(text: str) -> float | None:
             return parse_euro_amount(match.group(1))
 
     return None
+
+def find_provider(text: str) -> str | None:
+    """
+    Busca una posible razón social del emisor de la factura.
+
+    Primera versión: identifica empresas españolas con formas jurídicas
+    comunes, como S.A., S.L. o variantes Unipersonal.
+    """
+    lines = [line.strip() for line in text.splitlines() if line.strip()]
+
+    provider_pattern = re.compile(
+        r"^(.+?\bS\.\s*(?:A|L)\.?(?:\s+Unipersonal)?)",
+        flags=re.IGNORECASE,
+    )
+
+    for line in lines[:40]:
+        match = provider_pattern.search(line)
+
+        if match:
+            return match.group(1).strip()
+
+    return None
+
+def extract_invoice_fields(text: str) -> dict:
+    """
+    Extrae los campos principales de una factura a partir de su texto.
+
+    Los valores pueden ser None cuando no se han podido detectar.
+    """
+    return {
+        "provider": find_provider(text),
+        "invoice_date": find_invoice_date(text),
+        "total_amount": find_total_amount(text),
+        "tax_amount": find_tax_amount(text),
+        "currency": "EUR",
+    }
